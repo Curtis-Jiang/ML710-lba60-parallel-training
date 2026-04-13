@@ -1,0 +1,19 @@
+{
+  "dataset_name": "pubchem_course",
+  "seed": 42,
+  "train_size": 100000,
+  "val_size": 10000,
+  "train_positive_rate": 0.09091,
+  "val_positive_rate": 0.0909,
+  "protein_vocab_size": 24,
+  "smiles_vocab_size": 48,
+  "protein_pad_id": 0,
+  "protein_unk_id": 1,
+  "smiles_pad_id": 0,
+  "smiles_unk_id": 1,
+  "suggested_max_protein_len": 512,
+  "suggested_max_smiles_len": 128,
+  "source_train_row_metadata": "/jfs/canjiang/gfm/New_Version_Of_pairwise/data/processed/banks/pubchem_binary_pairagg_fullseq/train/row_metadata.tsv",
+  "source_train_labels": "/jfs/canjiang/gfm/New_Version_Of_pairwise/data/processed/banks/pubchem_binary_pairagg_fullseq/train/labels.npy",
+  "source_val_csv": "/jfs/canjiang/gfm/New_Version_Of_pairwise/data/processed/banks/pubchem_binary_pairagg_fullseq_valsampled10x/pubchem_val_sampled10x.csv"
+}

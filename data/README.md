@@ -1,16 +1,25 @@
-# Data Folder
+# Data
 
-This repository is published without the large processed tensor files in order to keep the GitHub repo within practical size limits.
+The active runtime data for this project lives under:
 
-Expected local path for the workload data:
+- `data/datasets/pubchem_course/train.tsv`
+- `data/datasets/pubchem_course/val.tsv`
+- `data/datasets/pubchem_course/protein_vocab.json`
+- `data/datasets/pubchem_course/smiles_vocab.json`
+- `data/datasets/pubchem_course/dataset_meta.json`
 
-`data/processed/lba60_existing_pocket/`
+These files define the actual course dataset used by training and evaluation.
+They are compact enough to share with teammates directly.
 
-Expected local files:
+The TSV schema is:
 
-- `lba60_train.pt`
-- `lba60_val.pt`
-- `lba60_test.pt`
-- `lba60_preprocess_meta.json`
+- `sample_id`
+- `protein_sequence`
+- `smiles`
+- `label`
 
-The code and configs in this repo assume that the three `.pt` files are present locally before training or evaluation starts.
+To rebuild the compact dataset from the external source files:
+
+```bash
+python scripts/build_compact_dataset.py
+```

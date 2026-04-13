@@ -1,24 +1,63 @@
 #!/usr/bin/env bash
 set -euo pipefail
+cd "$(dirname "$0")/.."
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-RUN_NAME="${1:-lba60_smoke_validation_$(date -u +%Y%m%d_%H%M%S)}"
-SEED="${2:-0}"
-CKPT_PATH="$REPO_ROOT/runs/affinity/lba60/$RUN_NAME/ckpt_best.pt"
+python scripts/build_compact_dataset.py
 
-cd "$REPO_ROOT"
+rm -rf \
+  runs/attention_smoke_single \
+  runs/attention_smoke_ddp \
+  runs/attention_smoke_ddp_zero \
+  runs/mamba_smoke_single \
+  runs/mamba_smoke_ddp
 
-echo "[1/4] Forward sanity check"
-python scripts/forward_sanity.py --config configs/lba60_quick.yaml --split train --batch_size 2
+python scripts/train_binding.py \
+  --config configs/attention_smoke.yaml \
+  --strategy single \
+  --run-name attention_smoke_single
+python scripts/eval_binding.py \
+  --config configs/attention_smoke.yaml \
+  --checkpoint runs/attention_smoke_single/best.pt \
+  --output report/artifacts/attention_smoke_single_eval.json
 
-echo "[2/4] Packed launcher dry run"
-python scripts/launch_lba60_jobs.py --spec configs/packed_seed_sweep.yaml --dry_run
+torchrun --standalone --nnodes=1 --nproc_per_node=2 \
+  scripts/train_binding.py \
+  --config configs/attention_smoke.yaml \
+  --strategy ddp \
+  --run-name attention_smoke_ddp
+python scripts/eval_binding.py \
+  --config configs/attention_smoke.yaml \
+  --checkpoint runs/attention_smoke_ddp/best.pt \
+  --output report/artifacts/attention_smoke_ddp_eval.json
 
-echo "[3/4] Single-GPU smoke training"
-bash scripts/train_lba60_single.sh configs/lba60_smoke.yaml "$RUN_NAME" "$SEED"
+torchrun --standalone --nnodes=1 --nproc_per_node=2 \
+  scripts/train_binding.py \
+  --config configs/attention_smoke.yaml \
+  --strategy ddp_zero \
+  --run-name attention_smoke_ddp_zero
+python scripts/eval_binding.py \
+  --config configs/attention_smoke.yaml \
+  --checkpoint runs/attention_smoke_ddp_zero/best.pt \
+  --output report/artifacts/attention_smoke_ddp_zero_eval.json
 
-echo "[4/4] Checkpoint evaluation"
-bash scripts/eval_lba60.sh "$CKPT_PATH" test 32 val
+python scripts/train_binding.py \
+  --config configs/mamba_smoke.yaml \
+  --strategy single \
+  --run-name mamba_smoke_single
+python scripts/eval_binding.py \
+  --config configs/mamba_smoke.yaml \
+  --checkpoint runs/mamba_smoke_single/best.pt \
+  --output report/artifacts/mamba_smoke_single_eval.json
 
-echo "Smoke validation completed successfully."
-echo "Run directory: $REPO_ROOT/runs/affinity/lba60/$RUN_NAME"
+torchrun --standalone --nnodes=1 --nproc_per_node=2 \
+  scripts/train_binding.py \
+  --config configs/mamba_smoke.yaml \
+  --strategy ddp \
+  --run-name mamba_smoke_ddp
+python scripts/eval_binding.py \
+  --config configs/mamba_smoke.yaml \
+  --checkpoint runs/mamba_smoke_ddp/best.pt \
+  --output report/artifacts/mamba_smoke_ddp_eval.json
+
+python scripts/build_report.py --runs-dir runs --report-dir report
+echo "smoke validation finished"

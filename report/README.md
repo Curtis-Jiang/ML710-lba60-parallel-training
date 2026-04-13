@@ -1,27 +1,12 @@
-# Report Folder
+# Report
 
-This folder stores ML710-facing summaries for completed experiments.
+This directory contains the course-facing writeups and generated experiment
+artifacts for the rebuilt sequence-binding ML710 project.
 
-Expected contents:
-
-- run comparison notes
-- course requirement mapping
-- copied metrics or parsed summaries
-- final presentation/report-ready writeups
-
-The raw training artifacts still live under:
-
-`runs/affinity/lba60/`
-
-This separation keeps the report readable while preserving the original run outputs.
-
-Key files generated in this pass:
-
-- `RUN_COMPARISON.md`
-- `ML710_SUMMARY.md`
-- `EXPERIMENT_SETUP.md`
-- `artifacts/run_comparison.json`
-- `artifacts/lba60_single_quick_seed0.summary.json`
-- `artifacts/lba60_ddp_quick_seed0.summary.json`
-
-Raw terminal logs were intentionally omitted after the naming cleanup so the shared project folder only contains the renamed `binding_affinity` terminology.
+- `WORKLOAD_OVERVIEW.md`
+- `ARCHITECTURES.md`
+- `EXPERIMENT_MATRIX.md`
+- `COURSE_REQUIREMENTS_MAPPING.md`
+- `SLIDE_OUTLINE.md`
+- `RESULTS_SUMMARY.md` (generated)
+- `artifacts/` (generated CSV/JSON tables)
