@@ -61,6 +61,7 @@ def _save_yaml(path: Path, payload: dict[str, Any]) -> None:
 
 
 def _save_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         json.dump(payload, handle, indent=2)
 
