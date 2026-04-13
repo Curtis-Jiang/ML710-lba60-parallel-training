@@ -1,0 +1,7 @@
+includes:
+  - configs/lba60_base.yaml
+
+train:
+  epochs: 20
+  batch_size: 8
+  num_workers: 4

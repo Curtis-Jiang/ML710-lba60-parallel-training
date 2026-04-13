@@ -1,0 +1,35 @@
+includes:
+  - binding_affinity/configs/affinity/lba60.yaml
+
+seed: 0
+
+io:
+  processed_root: data/processed/lba60_existing_pocket
+  runs_root: runs/affinity
+  outputs_root: outputs
+
+data:
+  kind: processed_lba
+  pocket:
+    use_existing_pocket: true
+
+train:
+  epochs: 20
+  batch_size: 8
+  num_workers: 4
+  log_every: 10
+  eval_every: 1
+  save_best_metric: val/pearson
+
+optim:
+  lr: 5.0e-4
+  weight_decay: 1.0e-6
+
+loss:
+  name: mse
+  ranking:
+    enabled: false
+  weights:
+    rank: 0.0
+    loc: 0.0
+    entropy: 0.0

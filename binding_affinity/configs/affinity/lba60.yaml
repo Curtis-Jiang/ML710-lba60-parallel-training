@@ -1,0 +1,28 @@
+includes:
+  - binding_affinity/configs/affinity/train.yaml
+  - binding_affinity/configs/affinity/model_affinity.yaml
+
+task:
+  name: lba60
+  identity: 60
+
+data:
+  lmdb_root: atom_dataset/data/atom3d_lba/split-by-sequence-identity-60/data
+  heavy_atoms_only: true
+  pocket:
+    use_existing_pocket: false
+    max_residues: 50
+
+train:
+  batch_size: 16
+
+model:
+  tokenizer:
+    kp: 256
+    kl: 32
+    kint: 64
+
+loss:
+  weights:
+    rank: 0.1
+    loc: 1.0e-3

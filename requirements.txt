@@ -1,0 +1,10 @@
+# Core runtime for the standalone ML710 training/eval path.
+numpy>=2.0
+scipy>=1.10
+pyyaml>=6.0
+pandas>=2.0
+
+# Optional utilities retained from the vendored research engine.
+lmdb>=1.5.1
+tqdm>=4.66
+rdkit>=2024.9.1
