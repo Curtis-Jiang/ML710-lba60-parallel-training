@@ -1,7 +1,7 @@
 # ML710 Sequence Binding Parallel Training
 
-This repository is a course-focused rebuild of the ML710 project around a
-single supervised workload: binary protein-ligand binding classification from
+This repository is the final course-facing version of the ML710 project around
+one supervised workload: binary protein-ligand binding classification from
 protein sequences and SMILES strings.
 
 The project is optimized for distributed training clarity rather than model
@@ -12,6 +12,30 @@ novelty. It provides:
 - three training strategies: `single`, `ddp`, and `ddp_zero`
 - deterministic compact-dataset building
 - smoke validation and report artifact generation
+
+The current `*_course.yaml` configs are calibrated as the final course-scale
+setting:
+
+- target runtime: roughly the `A100 half-hour` course target
+- measured runtime on H100: about `16-33 minutes` for the four final runs
+- recommended final comparison: `single` vs `ddp_zero` for both Attention and Mamba
+
+## Final Submission Snapshot
+
+The canonical four course runs are:
+
+| Run | Model | Backend | Strategy | H100 Wall Time | Throughput (ex/s) | Val AUC | Val AUPR |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: |
+| `attention_single_course` | attention | `-` | `single` | `1203.80 s` | `2140.71` | `0.9390` | `0.6670` |
+| `attention_ddp_zero_course` | attention | `-` | `ddp_zero` | `990.25 s` | `2587.79` | `0.9385` | `0.6672` |
+| `mamba_single_course` | mamba | `mamba_ssm` | `single` | `1954.46 s` | `1314.76` | `0.9565` | `0.7575` |
+| `mamba_ddp_zero_course` | mamba | `mamba_ssm` | `ddp_zero` | `1338.40 s` | `1909.43` | `0.9589` | `0.7560` |
+
+These are the numbers currently reflected in:
+
+- `report/COURSE_EXPERIMENT_SUMMARY.md`
+- `report/RESULTS_SUMMARY.md`
+- `report/artifacts/course_run_table.csv`
 
 ## Project Layout
 
@@ -50,47 +74,70 @@ The compact dataset is intended to stay Git-friendly:
 
 ## Quick Start
 
-1. Install the default dependencies:
+1. Install the base dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Build the compact dataset:
+2. Install the Mamba dependency used by the final reported results:
+
+```bash
+bash scripts/install_mamba.sh
+```
+
+3. The compact dataset is already committed in this repo. This command is
+safe to run and will simply no-op unless you want to rebuild from the
+external source files:
 
 ```bash
 python scripts/build_compact_dataset.py
 ```
 
-3. Train the attention baseline on one GPU:
+4. Train the attention baseline on one GPU:
 
 ```bash
 bash scripts/train_attention_single.sh
 ```
 
-4. Train the attention model with 2-GPU DDP:
-
-```bash
-bash scripts/train_attention_ddp.sh
-```
-
-5. Train the advanced 2-GPU DDP+ZeRO run:
+5. Train the recommended advanced 2-GPU Attention run:
 
 ```bash
 bash scripts/train_attention_ddp_zero.sh
 ```
 
-6. Train the mamba model:
+6. Train the Mamba baseline and advanced run:
 
 ```bash
 bash scripts/train_mamba_single.sh
+bash scripts/train_mamba_ddp_zero.sh
+```
+
+7. Optional naive DDP baselines:
+
+```bash
+bash scripts/train_attention_ddp.sh
 bash scripts/train_mamba_ddp.sh
 ```
 
-7. Run the end-to-end smoke suite:
+8. Run the end-to-end smoke suite:
 
 ```bash
 bash scripts/smoke_validate.sh
+```
+
+## Reproducing The Final Four Runs
+
+To match the current course report as closely as possible:
+
+```bash
+pip install -r requirements.txt
+bash scripts/install_mamba.sh
+bash scripts/train_attention_single.sh
+bash scripts/train_attention_ddp_zero.sh
+bash scripts/train_mamba_single.sh
+bash scripts/train_mamba_ddp_zero.sh
+python scripts/build_report.py --runs-dir runs --report-dir report
 ```
 
 ## Notes
@@ -100,11 +147,11 @@ bash scripts/smoke_validate.sh
   source by `scripts/build_compact_dataset.py`.
 - The compact dataset is committed in this repository, so a teammate can clone
   or pull the repo and run training without fetching any external bank files.
-- The mamba model uses `mamba-ssm` when it is available. If the package is not
-  installed, the implementation falls back to a lightweight gated sequence
-  block so the project remains runnable for smoke validation.
-- If you want the official Mamba backend instead of the fallback block, install
-  it separately with `pip install mamba-ssm`.
+- The final project version uses `mamba_ssm` for all Mamba experiments.
+- `src/sequence_binding/models/mamba.py` loads the core Mamba module directly,
+  so the training path is not blocked by unrelated optional generation imports.
+- The helper script `scripts/check_mamba_install.py` is used by the Mamba
+  training scripts and the smoke suite to fail fast with a clear setup message.
 - `naive DDP` is included as a baseline because it is required for the course
   comparisons. `ddp_zero` is included as the advanced distributed strategy in
   this version of the project.

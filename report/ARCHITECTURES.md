@@ -11,11 +11,17 @@ The attention model uses:
 - masked mean pooling
 - a fusion MLP over `[protein, smiles, |diff|, product]`
 
+Current course-scale parameter count:
+
+- `15,651,841`
+
 ## Mamba
 
 The mamba model keeps the same outer scaffold but replaces each branch encoder
 with state-space sequence blocks.
 
-When `mamba-ssm` is available, the branch uses official Mamba blocks. If the
-package is not installed, the repo falls back to a lightweight gated sequence
-block so smoke validation still works.
+Current course-scale parameter count:
+
+- `18,926,593`
+
+The final reported results use `mamba_ssm`.

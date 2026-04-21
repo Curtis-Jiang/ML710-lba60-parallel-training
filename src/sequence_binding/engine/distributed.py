@@ -48,7 +48,7 @@ def setup_distributed(strategy: str, backend: str) -> DistributedContext:
         )
     if not torch.cuda.is_available():
         raise RuntimeError(f"{strategy} requires CUDA")
-    # Match the environment stabilizers used by the previous ML710 project.
+    # Keep NCCL defaults stable on the current cluster image.
     os.environ.setdefault("NCCL_NET_PLUGIN", "none")
     if "NCCL_TUNER_CONFIG_PATH" not in os.environ:
         for candidate in (

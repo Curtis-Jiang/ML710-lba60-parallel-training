@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import importlib.util
+import sys
+import types
+from pathlib import Path
+
 import torch
-import torch.nn.functional as F
 from torch import Tensor, nn
 
 from sequence_binding.models.common import (
@@ -10,50 +14,49 @@ from sequence_binding.models.common import (
     TokenPositionEmbedding,
 )
 
-try:
-    from mamba_ssm import Mamba as MambaSSM  # type: ignore
-except Exception:  # pragma: no cover - optional dependency
-    MambaSSM = None
+def _load_mamba_cls():
+    try:
+        from mamba_ssm import Mamba as MambaSSM  # type: ignore
+
+        return MambaSSM
+    except Exception:  # pragma: no cover - optional dependency
+        pass
+
+    # Some environments can install `mamba-ssm` successfully but fail on the
+    # top-level import because that path pulls in optional generation utilities.
+    # For this project we only need the core sequence block, so we load the
+    # `modules/mamba_simple.py` implementation directly when available.
+    try:
+        for key in list(sys.modules):
+            if key == "mamba_ssm" or key.startswith("mamba_ssm."):
+                sys.modules.pop(key, None)
+
+        spec = importlib.util.find_spec("mamba_ssm")
+        if spec is None or not spec.submodule_search_locations:
+            return None
+        package_dir = Path(next(iter(spec.submodule_search_locations)))
+        package = types.ModuleType("mamba_ssm")
+        package.__path__ = [str(package_dir)]  # type: ignore[attr-defined]
+        package.__package__ = "mamba_ssm"
+        sys.modules["mamba_ssm"] = package
+
+        module_name = "mamba_ssm.modules.mamba_simple"
+        module_path = package_dir / "modules" / "mamba_simple.py"
+        module_spec = importlib.util.spec_from_file_location(module_name, module_path)
+        if module_spec is None or module_spec.loader is None:
+            return None
+        module = importlib.util.module_from_spec(module_spec)
+        sys.modules[module_name] = module
+        module_spec.loader.exec_module(module)
+        return getattr(module, "Mamba", None)
+    except Exception:  # pragma: no cover - optional dependency
+        return None
 
 
-class FallbackMambaBlock(nn.Module):
-    """Lightweight gated sequence block used when mamba-ssm is unavailable."""
-
-    def __init__(self, hidden_dim: int, ff_multiplier: int, dropout: float) -> None:
-        super().__init__()
-        self.norm = nn.LayerNorm(hidden_dim)
-        self.in_proj = nn.Linear(hidden_dim, hidden_dim * 2)
-        self.depthwise_conv = nn.Conv1d(
-            hidden_dim,
-            hidden_dim,
-            kernel_size=3,
-            padding=1,
-            groups=hidden_dim,
-        )
-        self.out_proj = nn.Linear(hidden_dim, hidden_dim)
-        self.dropout = nn.Dropout(dropout)
-        self.ff_norm = nn.LayerNorm(hidden_dim)
-        self.ff = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim * ff_multiplier),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim * ff_multiplier, hidden_dim),
-        )
-
-    def forward(self, hidden: Tensor, mask: Tensor) -> Tensor:
-        residual = hidden
-        normalized = self.norm(hidden)
-        gate, value = self.in_proj(normalized).chunk(2, dim=-1)
-        value = self.depthwise_conv(value.transpose(1, 2)).transpose(1, 2)
-        mixed = self.out_proj(F.silu(value) * torch.sigmoid(gate))
-        hidden = residual + self.dropout(mixed * mask.unsqueeze(-1).to(mixed.dtype))
-        hidden = hidden + self.dropout(
-            self.ff(self.ff_norm(hidden)) * mask.unsqueeze(-1).to(hidden.dtype)
-        )
-        return hidden
+MambaSSM = _load_mamba_cls()
 
 
-class OfficialMambaBlock(nn.Module):
+class MambaBlock(nn.Module):
     def __init__(
         self,
         hidden_dim: int,
@@ -65,7 +68,10 @@ class OfficialMambaBlock(nn.Module):
     ) -> None:
         super().__init__()
         if MambaSSM is None:
-            raise RuntimeError("mamba-ssm is not available")
+            raise RuntimeError(
+                "mamba-ssm is required for the final project version. "
+                "Run `bash scripts/install_mamba.sh` first."
+            )
         self.norm = nn.LayerNorm(hidden_dim)
         self.block = MambaSSM(
             d_model=hidden_dim,
@@ -116,24 +122,16 @@ class MambaBranchEncoder(nn.Module):
             pad_id=pad_id,
             dropout=dropout,
         )
-        block_cls: type[nn.Module]
-        self.backend = "mamba_ssm" if MambaSSM is not None else "fallback_gated_conv"
-        block_cls = OfficialMambaBlock if MambaSSM is not None else FallbackMambaBlock
+        self.backend = "mamba_ssm"
         self.layers = nn.ModuleList(
             [
-                block_cls(
+                MambaBlock(
                     hidden_dim=hidden_dim,
                     ff_multiplier=ff_multiplier,
                     dropout=dropout,
                     d_state=d_state,
                     d_conv=d_conv,
                     expand=expand,
-                )
-                if MambaSSM is not None
-                else block_cls(
-                    hidden_dim=hidden_dim,
-                    ff_multiplier=ff_multiplier,
-                    dropout=dropout,
                 )
                 for _ in range(num_layers)
             ]

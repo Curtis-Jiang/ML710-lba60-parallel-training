@@ -23,9 +23,15 @@ make the slide content easy to reproduce:
 4. Evaluation:
    throughput, wall-clock time, validation AUC, validation AUPR
 
+The current final results use:
+
+- Attention on `single` and `ddp_zero`
+- Mamba with `mamba_ssm` on `single` and `ddp_zero`
+
 ## Key Output Files
 
 - `report/RESULTS_SUMMARY.md`
+- `report/COURSE_EXPERIMENT_SUMMARY.md`
 - `report/COURSE_REQUIREMENTS_MAPPING.md`
 - `report/SLIDE_OUTLINE.md`
 - `report/artifacts/run_table.csv`
@@ -33,6 +39,10 @@ make the slide content easy to reproduce:
 ## Reproducibility Entry Point
 
 ```bash
-python scripts/build_compact_dataset.py
+pip install -r requirements.txt
+bash scripts/install_mamba.sh
 bash scripts/smoke_validate.sh
 ```
+
+`build_compact_dataset.py` is safe to run in a fresh clone because it exits
+early when the tracked compact TSV dataset is already present.

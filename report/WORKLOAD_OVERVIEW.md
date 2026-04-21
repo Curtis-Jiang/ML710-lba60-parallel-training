@@ -21,3 +21,13 @@ The compact dataset uses:
 
 This keeps the repo better aligned with the ML710 goal of studying parallel
 training behavior instead of domain-specific preprocessing complexity.
+
+In the current final project version:
+
+- Attention is the lighter comparison model
+- Mamba with `mamba_ssm` is the heavier comparison model
+- `ddp_zero` is the advanced distributed strategy
+
+This gives one workload with two model families and one advanced distributed
+method, which is a much cleaner course story than the original research-style
+3D graph pipeline.

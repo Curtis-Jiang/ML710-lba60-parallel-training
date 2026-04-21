@@ -22,6 +22,13 @@ It contains:
 - `smiles_vocab.json`
 - `dataset_meta.json`
 
+Each TSV row has:
+
+- `sample_id`
+- `protein_sequence`
+- `smiles`
+- `label`
+
 ## Representation
 
 - Protein and SMILES are stored as plain strings in TSV rows.
@@ -38,8 +45,14 @@ It contains:
 - Smoke runs use the same files but limit the number of train/eval batches in
   config.
 
-Build or rebuild the compact dataset with:
+The compact dataset is already tracked in this repository, so teammates do not
+need to build it before running experiments.
+
+If you want to rebuild it from the original external source files, use:
 
 ```bash
 python scripts/build_compact_dataset.py
 ```
+
+For the current final project version, the tracked TSV dataset is the default
+and recommended path.

@@ -12,6 +12,16 @@ def _load_json(path: Path) -> dict:
         return json.load(handle)
 
 
+def _write_rows(json_path: Path, csv_path: Path, rows: list[dict]) -> None:
+    with json_path.open("w", encoding="utf-8") as handle:
+        json.dump(rows, handle, indent=2)
+    if rows:
+        with csv_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+            writer.writeheader()
+            writer.writerows(rows)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build report artifacts from run summaries.")
     parser.add_argument("--runs-dir", default="runs")
@@ -31,6 +41,7 @@ def main() -> int:
             "model": summary["model"],
             "strategy": summary["strategy"],
             "mamba_backend": summary.get("mamba_backend"),
+            "parameter_count": summary["parameter_count"],
             "global_batch_size": summary["global_batch_size"],
             "per_device_batch_size": summary["per_device_batch_size"],
             "best_epoch": summary["best_epoch"],
@@ -45,31 +56,34 @@ def main() -> int:
 
     json_path = artifact_dir / "run_table.json"
     csv_path = artifact_dir / "run_table.csv"
-    with json_path.open("w", encoding="utf-8") as handle:
-        json.dump(rows, handle, indent=2)
-    if rows:
-        with csv_path.open("w", encoding="utf-8", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
-            writer.writeheader()
-            writer.writerows(rows)
+    _write_rows(json_path, csv_path, rows)
+
+    course_rows = [row for row in rows if "_course" in row["run_name"]]
+    course_json_path = artifact_dir / "course_run_table.json"
+    course_csv_path = artifact_dir / "course_run_table.csv"
+    _write_rows(course_json_path, course_csv_path, course_rows)
 
     lines = [
         "# Results Summary",
         "",
         "This file is generated from `runs/*/summary.json`.",
         "",
-        "| Run | Model | Strategy | Val AUC | Val AUPR | Throughput (ex/s) | Wall Time (s) |",
-        "| --- | --- | --- | ---: | ---: | ---: | ---: |",
+        "| Run | Model | Backend | Strategy | Val AUC | Val AUPR | Throughput (ex/s) | Wall Time (s) | Params |",
+        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in rows:
+        backend = row["mamba_backend"] or "-"
         lines.append(
-            f"| {row['run_name']} | {row['model']} | {row['strategy']} | "
+            f"| {row['run_name']} | {row['model']} | {backend} | {row['strategy']} | "
             f"{row['best_val_auc']:.4f} | {row['best_val_aupr']:.4f} | "
-            f"{row['mean_train_examples_per_sec']:.2f} | {row['total_wall_time_sec']:.2f} |"
+            f"{row['mean_train_examples_per_sec']:.2f} | {row['total_wall_time_sec']:.2f} | "
+            f"{row.get('parameter_count', 0):,} |"
         )
     (report_dir / "RESULTS_SUMMARY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(json_path)
     print(csv_path)
+    print(course_json_path)
+    print(course_csv_path)
     return 0
 
 

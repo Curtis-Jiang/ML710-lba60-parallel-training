@@ -6,5 +6,5 @@ python scripts/check_mamba_install.py
 torchrun --standalone --nnodes=1 --nproc_per_node=2 \
   scripts/train_binding.py \
   --config configs/mamba_course.yaml \
-  --strategy ddp \
-  --run-name mamba_ddp_course
+  --strategy ddp_zero \
+  --run-name mamba_ddp_zero_course

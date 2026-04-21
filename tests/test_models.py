@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import pytest
 import torch
 
 from sequence_binding.data.batch import PairBatch
 from sequence_binding.models.attention import build_attention_model
-from sequence_binding.models.mamba import build_mamba_model
+from sequence_binding.models.mamba import MambaSSM, build_mamba_model
 
 
 def _dummy_batch() -> PairBatch:
@@ -39,6 +40,8 @@ def test_attention_forward_backward() -> None:
 
 
 def test_mamba_forward_backward() -> None:
+    if MambaSSM is None:
+        pytest.skip("install mamba via `bash scripts/install_mamba.sh`")
     model = build_mamba_model(
         protein_vocab_size=32,
         smiles_vocab_size=32,
@@ -55,6 +58,10 @@ def test_mamba_forward_backward() -> None:
         expand=2,
     )
     batch = _dummy_batch()
+    if not torch.cuda.is_available():
+        pytest.skip("mamba_ssm backend requires CUDA")
+    model = model.to("cuda")
+    batch = batch.to(torch.device("cuda"))
     logits = model(batch)
     assert tuple(logits.shape) == (2,)
     loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, batch.labels)

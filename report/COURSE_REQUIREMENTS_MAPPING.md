@@ -7,6 +7,8 @@
 - 2-GPU naive DDP baseline
 - 2-GPU DDP + ZeroRedundancyOptimizer as the advanced distributed strategy
 - report artifacts for throughput and validation quality
+- final course-scale runs with `mamba_ssm`
+- runtime settings that are much closer to the intended A100 half-hour target
 
 ## What It Does Not Claim
 
@@ -23,3 +25,10 @@ rule.
 - validation AUC
 - validation AUPR
 - accuracy and F1
+
+## Current Final Run Set
+
+- `attention_single_course`
+- `attention_ddp_zero_course`
+- `mamba_single_course`
+- `mamba_ddp_zero_course`

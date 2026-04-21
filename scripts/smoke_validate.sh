@@ -40,6 +40,8 @@ python scripts/eval_binding.py \
   --checkpoint runs/attention_smoke_ddp_zero/best.pt \
   --output report/artifacts/attention_smoke_ddp_zero_eval.json
 
+python scripts/check_mamba_install.py
+
 python scripts/train_binding.py \
   --config configs/mamba_smoke.yaml \
   --strategy single \

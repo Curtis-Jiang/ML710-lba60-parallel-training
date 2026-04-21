@@ -15,8 +15,8 @@ data:
 
 model:
   name: attention
-  hidden_dim: 256
-  num_layers: 2
+  hidden_dim: 384
+  num_layers: 4
   num_heads: 8
   ff_multiplier: 4
   dropout: 0.1
@@ -25,7 +25,7 @@ model:
   mamba_expand: 2
 
 train:
-  epochs: 5
+  epochs: 25
   global_batch_size: 64
   eval_batch_size: 128
   learning_rate: 0.001

@@ -15,17 +15,17 @@ data:
 
 model:
   name: mamba
-  hidden_dim: 256
-  num_layers: 2
+  hidden_dim: 384
+  num_layers: 4
   num_heads: 8
   ff_multiplier: 4
   dropout: 0.1
-  mamba_d_state: 16
+  mamba_d_state: 32
   mamba_d_conv: 4
   mamba_expand: 2
 
 train:
-  epochs: 5
+  epochs: 25
   global_batch_size: 64
   eval_batch_size: 128
   learning_rate: 0.001
