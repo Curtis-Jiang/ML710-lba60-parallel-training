@@ -1,0 +1,49 @@
+{
+  "run_name": "attention_fsdp_z2_2gpu_smoke",
+  "strategy": "fsdp_z2",
+  "model": "attention",
+  "mamba_backend": null,
+  "parameter_count": 979457,
+  "global_batch_size": 32,
+  "per_device_batch_size": 16,
+  "epochs": 1,
+  "train_tsv": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/data/datasets/pubchem_course/train.tsv",
+  "val_tsv": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/data/datasets/pubchem_course/val.tsv",
+  "best_epoch": 1,
+  "best_val_metrics": {
+    "loss": 0.3312006164342165,
+    "auc": 0.5994509265614276,
+    "aupr": 0.1676463158749505,
+    "accuracy": 0.908203125,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "positive_rate": 0.091796875
+  },
+  "mean_train_examples_per_sec": 755.1025659599223,
+  "total_wall_time_sec": 2.1840404940303415,
+  "peak_gpu_bytes_rank0": 101333504,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3394099894212559,
+      "train_examples": 1024,
+      "train_examples_per_sec": 755.1025659599223,
+      "epoch_wall_time_sec": 1.3561071649892256,
+      "cumulative_wall_time_sec": 2.1829144320217893,
+      "peak_gpu_bytes": 101333504,
+      "val_metrics": {
+        "loss": 0.3312006164342165,
+        "auc": 0.5994509265614276,
+        "aupr": 0.1676463158749505,
+        "accuracy": 0.908203125,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "positive_rate": 0.091796875
+      }
+    }
+  ],
+  "history_path": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/runs/attention_fsdp_z2_2gpu_smoke/history.jsonl",
+  "best_checkpoint": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/runs/attention_fsdp_z2_2gpu_smoke/best.pt"
+}

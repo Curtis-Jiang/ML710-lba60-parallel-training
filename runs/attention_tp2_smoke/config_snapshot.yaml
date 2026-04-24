@@ -1,0 +1,43 @@
+experiment:
+  name: attention_tp2_smoke
+  seed: 42
+  output_dir: runs
+data:
+  train_tsv: data/datasets/pubchem_course/train.tsv
+  val_tsv: data/datasets/pubchem_course/val.tsv
+  protein_vocab_json: data/datasets/pubchem_course/protein_vocab.json
+  smiles_vocab_json: data/datasets/pubchem_course/smiles_vocab.json
+  max_protein_len: 256
+  max_smiles_len: 96
+  num_workers: 0
+  pin_memory: false
+model:
+  name: attention
+  hidden_dim: 128
+  num_layers: 2
+  num_heads: 4
+  ff_multiplier: 4
+  dropout: 0.1
+  mamba_d_state: 16
+  mamba_d_conv: 4
+  mamba_expand: 2
+train:
+  epochs: 1
+  global_batch_size: 32
+  eval_batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 0.01
+  grad_clip_norm: 1.0
+  mixed_precision: bf16
+  log_interval: 5
+  max_train_batches: 32
+  max_eval_batches: 4
+distributed:
+  strategy: tp
+  backend: nccl
+  find_unused_parameters: false
+  tp_size: 2
+  dp_size: 1
+  fsdp_sharding: full_shard
+report:
+  report_dir: report

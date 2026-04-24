@@ -1,0 +1,49 @@
+{
+  "run_name": "attention_tp2_smoke",
+  "strategy": "tp",
+  "model": "attention",
+  "mamba_backend": null,
+  "parameter_count": 979457,
+  "global_batch_size": 32,
+  "per_device_batch_size": 32,
+  "epochs": 1,
+  "train_tsv": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/data/datasets/pubchem_course/train.tsv",
+  "val_tsv": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/data/datasets/pubchem_course/val.tsv",
+  "best_epoch": 1,
+  "best_val_metrics": {
+    "loss": 0.2800927124917507,
+    "auc": 0.5675105485232067,
+    "aupr": 0.14212915869353354,
+    "accuracy": 0.92578125,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "positive_rate": 0.07421875
+  },
+  "mean_train_examples_per_sec": 276.1226522854595,
+  "total_wall_time_sec": 3.8540764519711956,
+  "peak_gpu_bytes_rank0": 145825792,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3100420816335827,
+      "train_examples": 1024,
+      "train_examples_per_sec": 276.1226522854595,
+      "epoch_wall_time_sec": 3.7084968999261037,
+      "cumulative_wall_time_sec": 3.853428786038421,
+      "peak_gpu_bytes": 145825792,
+      "val_metrics": {
+        "loss": 0.2800927124917507,
+        "auc": 0.5675105485232067,
+        "aupr": 0.14212915869353354,
+        "accuracy": 0.92578125,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "positive_rate": 0.07421875
+      }
+    }
+  ],
+  "history_path": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/runs/attention_tp2_smoke/history.jsonl",
+  "best_checkpoint": "/nfs-stor/changjiang.han/ML710-lba60-parallel-training/runs/attention_tp2_smoke/best.pt"
+}
