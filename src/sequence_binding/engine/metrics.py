@@ -84,3 +84,21 @@ def finite_or_none(value: float) -> float | None:
     if value is None:
         return None
     return None if math.isnan(value) else float(value)
+
+
+def goodput(
+    *,
+    examples_per_sec: float,
+    val_auc: float,
+    baseline_val_auc: float,
+    scaling_efficiency: float,
+) -> float:
+    """Goodput = throughput x statistical-quality ratio x hardware-scaling ratio.
+
+    Product of raw throughput (examples/sec), a convergence-quality factor
+    (<=1 when the parallel run reaches a worse AUC than the single-GPU
+    reference), and a hardware-scaling factor (<=1 when parallel overhead
+    dominates). Clamped at 0 to avoid spurious negative goodput.
+    """
+    quality_ratio = max(float(val_auc), 0.0) / max(float(baseline_val_auc), 1e-9)
+    return float(examples_per_sec) * quality_ratio * max(float(scaling_efficiency), 0.0)

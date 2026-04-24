@@ -24,7 +24,11 @@ class DistributedContext:
 
     @property
     def enabled(self) -> bool:
-        return self.strategy != "single"
+        # Reflects reality rather than strategy name: branch_mp is a
+        # "non-single" strategy in spirit but runs as one process with no
+        # process group initialized, so collective helpers must treat it
+        # as disabled. The only source of truth is ``dist.is_initialized``.
+        return dist.is_available() and dist.is_initialized()
 
 
 def seed_everything(seed: int) -> None:
@@ -32,6 +36,11 @@ def seed_everything(seed: int) -> None:
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+
+
+def branch_secondary_device() -> torch.device:
+    """Secondary device used by the branch model-parallel wrapper."""
+    return torch.device("cuda:1")
 
 
 def setup_distributed(strategy: str, backend: str) -> DistributedContext:
@@ -42,6 +51,18 @@ def setup_distributed(strategy: str, backend: str) -> DistributedContext:
         return DistributedContext(
             strategy=strategy,
             device=device,
+            rank=0,
+            local_rank=0,
+            world_size=1,
+        )
+    if strategy == "branch_mp":
+        if not torch.cuda.is_available() or torch.cuda.device_count() < 2:
+            raise RuntimeError("branch_mp requires >=2 CUDA devices in one process")
+        primary = torch.device("cuda:0")
+        torch.cuda.set_device(primary)
+        return DistributedContext(
+            strategy=strategy,
+            device=primary,
             rank=0,
             local_rank=0,
             world_size=1,

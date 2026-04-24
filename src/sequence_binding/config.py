@@ -68,6 +68,9 @@ class DistributedSection:
     strategy: str
     backend: str
     find_unused_parameters: bool
+    tp_size: int = 1
+    dp_size: int = 1
+    fsdp_sharding: str = "full_shard"
 
 
 @dataclass

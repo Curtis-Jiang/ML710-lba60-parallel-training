@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -20,7 +21,16 @@ def main() -> int:
     parser.add_argument(
         "--strategy",
         default=None,
-        choices=["single", "ddp", "ddp_zero"],
+        choices=[
+            "single",
+            "ddp",
+            "ddp_zero",
+            "fsdp_z2",
+            "fsdp_z3",
+            "branch_mp",
+            "tp",
+            "hybrid_tp_dp",
+        ],
         help="Optional override for the distributed strategy.",
     )
     parser.add_argument("--run-name", default=None, help="Optional output run directory name.")
@@ -28,7 +38,11 @@ def main() -> int:
 
     config = load_experiment_config(args.config)
     run_dir = run_training(config, strategy=args.strategy, run_name=args.run_name)
-    print(run_dir)
+    # Only the launcher-visible rank should print the run directory: under
+    # torchrun every child process reaches this line, so a bare ``print``
+    # would emit N duplicate lines and confuse downstream parsers.
+    if int(os.environ.get("RANK", "0")) == 0:
+        print(run_dir)
     return 0
 
 
