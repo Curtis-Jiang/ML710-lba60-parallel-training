@@ -1,0 +1,45 @@
+experiment:
+  name: attention_branch_mp_course
+  seed: 42
+  output_dir: runs
+
+data:
+  train_tsv: data/datasets/pubchem_course/train.tsv
+  val_tsv: data/datasets/pubchem_course/val.tsv
+  protein_vocab_json: data/datasets/pubchem_course/protein_vocab.json
+  smiles_vocab_json: data/datasets/pubchem_course/smiles_vocab.json
+  max_protein_len: 512
+  max_smiles_len: 128
+  num_workers: 4
+  pin_memory: true
+
+model:
+  name: attention
+  hidden_dim: 384
+  num_layers: 4
+  num_heads: 8
+  ff_multiplier: 4
+  dropout: 0.1
+  mamba_d_state: 16
+  mamba_d_conv: 4
+  mamba_expand: 2
+
+train:
+  epochs: 25
+  global_batch_size: 64
+  eval_batch_size: 128
+  learning_rate: 0.001
+  weight_decay: 0.01
+  grad_clip_norm: 1.0
+  mixed_precision: bf16
+  log_interval: 20
+  max_train_batches: null
+  max_eval_batches: null
+
+distributed:
+  strategy: branch_mp
+  backend: nccl
+  find_unused_parameters: false
+
+report:
+  report_dir: report
